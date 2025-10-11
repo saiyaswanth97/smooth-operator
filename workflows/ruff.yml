@@ -1,0 +1,54 @@
+name: Ruff
+on: [pull_request]
+jobs:
+  ruff-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
+
+      - name: Get changed Python files
+        id: get-changed-files
+        run: |
+          BASE_BRANCH="origin/${{ github.event.pull_request.base.ref }}"
+          CHANGED_FILES=$(git diff --name-only --diff-filter=AM $BASE_BRANCH | grep '\.py$' || true)
+          CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^ros2_ws/src/third_party/' || true)
+          CHANGED_FILES_SINGLE_LINE=$(echo "$CHANGED_FILES" | tr '\n' ' ' | xargs)
+          echo "Changed Python files: $CHANGED_FILES"
+          echo "files=$CHANGED_FILES_SINGLE_LINE" >> $GITHUB_OUTPUT
+
+      - name: Run Ruff lint on changed files
+        if: steps.get-changed-files.outputs.files != ''
+        uses: astral-sh/ruff-action@v3
+        with:
+          version: 0.11.2
+          args: check --config ./pyproject.toml
+          src: ${{ steps.get-changed-files.outputs.files }}
+
+  ruff-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
+
+      - name: Get changed Python files
+        id: get-changed-files
+        run: |
+          BASE_BRANCH="origin/${{ github.event.pull_request.base.ref }}"
+          CHANGED_FILES=$(git diff --name-only --diff-filter=AM $BASE_BRANCH | grep '\.py$' || true)
+          CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^ros2_ws/src/third_party/' || true)
+          CHANGED_FILES_SINGLE_LINE=$(echo "$CHANGED_FILES" | tr '\n' ' ' | xargs)
+          echo "Changed Python files: $CHANGED_FILES"
+          echo "files=$CHANGED_FILES_SINGLE_LINE" >> $GITHUB_OUTPUT
+
+      - name: Run Ruff format on changed files
+        if: steps.get-changed-files.outputs.files != ''
+        uses: astral-sh/ruff-action@v3
+        with:
+          version: 0.11.2
+          args: format --check --config ./pyproject.toml
+          src: ${{ steps.get-changed-files.outputs.files }}

@@ -1,0 +1,22 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+
+AccessModifierOffset: '-4'
+AlignAfterOpenBracket: Align
+BreakBeforeBraces: Attach
+ColumnLimit: 100
+ContinuationIndentWidth: 2
+IndentWidth: 4
+ReflowComments: false
+TabWidth: 4
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterEnum: true
+DerivePointerAlignment: false
+PointerAlignment: Right
+...
+

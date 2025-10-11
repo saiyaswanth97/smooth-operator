@@ -1,0 +1,40 @@
+name: C++ Linter
+on: [pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # Add permission to write comments on pull requests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up GitHub token
+        run: echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Echo GITHUB_WORKSPACE
+        run: 'echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"'
+
+      - name: Run C++ Linter
+        uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        with:
+          style: 'file'
+          ignore: ''
+          tidy-checks: '-*'
+          repo-root: '.'
+          files-changed-only: true
+          lines-changed-only: false
+          verbosity: debug
+          thread-comments: true
+
+      - name: Debug - Linter output
+        run: |
+          echo "Checks failed: ${{ steps.linter.outputs.checks-failed }}"
+          echo "Clang format checks failed: ${{ steps.linter.outputs.clang-format-checks-failed }}"
+          echo "Clang tidy checks failed: ${{ steps.linter.outputs.clang-tidy-checks-failed }}"
+
+      - name: Fail if linter found problems
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
