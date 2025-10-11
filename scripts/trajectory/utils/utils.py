@@ -4,6 +4,7 @@ import os
 import csv
 from typing import Tuple
 import numpy
+import matplotlib.pyplot as plt
 
 
 class WayPoints:
@@ -123,11 +124,41 @@ def read_waypoint_file(file_name: str) -> Tuple[numpy.ndarray, bool]:
     return WayPoints(x, y), True
 
 
+def plot_waypoints(waypoints: WayPoints, plot: bool = True) -> numpy.ndarray:
+    """
+    Plots the given waypoints.
+    Args:
+        waypoints (WayPoints): Object containing x and y arrays.
+        plot (bool): If True, displays the plot.
+    Returns:
+        numpy.ndarray: Image array of the plotted waypoints.
+    """
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(waypoints.x, waypoints.y, marker="*", linestyle="-", color="r")
+    plt.title("Waypoints")
+    plt.xlabel("X Position")
+    plt.ylabel("Y Position")
+    plt.axis("equal")
+
+    img = plt.gcf()
+    img.canvas.draw()
+    img_array = numpy.frombuffer(img.canvas.tostring_rgb(), dtype=numpy.uint8)
+    img_array = img_array.reshape(img.canvas.get_width_height()[::-1] + (3,))
+
+    if plot:
+        plt.show()
+    plt.close()
+
+    return img_array
+
+
 if __name__ == "__main__":
     file_name = "../../../trajectory_data/waypoints/a.csv"
     file_path = os.path.join(os.path.dirname(__file__), file_name)
     waypoints, success = read_waypoint_file(file_path)
     if success:
         print(waypoints)
+        plot_waypoints(waypoints, plot=True)
     else:
         print("Failed to read waypoints.")
