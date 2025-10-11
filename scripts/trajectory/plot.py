@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 
 FILE_NAME = "waypoints/a.csv"
 
-'''
+"""
 Plots the trajectory data from a CSV file.
-'''
+"""
+
+
 def plot_trajectory(file_name):
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"File {file_name} does not exist.")
@@ -18,22 +20,22 @@ def plot_trajectory(file_name):
     x = []
     y = []
 
-    with open(file_name, 'r') as csvfile:
+    with open(file_name, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            x.append(float(row['x']))
-            y.append(float(row['y']))
+            x.append(float(row["x"]))
+            y.append(float(row["y"]))
 
     x = numpy.array(x)
     y = numpy.array(y)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(x, y, marker='*', linestyle='-', color='r')
-    plt.title('Trajectory Data')
-    plt.xlabel('X Position')
-    plt.ylabel('Y Position')
+    plt.plot(x, y, marker="*", linestyle="-", color="r")
+    plt.title("Trajectory Data")
+    plt.xlabel("X Position")
+    plt.ylabel("Y Position")
     # plt.grid(True)
-    plt.axis('equal')
+    plt.axis("equal")
     plt.show()
 
 
