@@ -6,14 +6,17 @@ import numpy
 import matplotlib.pyplot as plt
 
 
-FILE_NAME = "waypoints/a.csv"
-
-"""
-Plots the trajectory data from a CSV file.
-"""
+FILE_NAME = "../../trajectory_data/waypoints/a.csv"
 
 
-def plot_trajectory(file_name):
+def plot_trajectory(file_name: str) -> None:
+    """
+    Plots the trajectory data from a CSV file.
+    Args:
+        file_name (str): Path to the CSV file containing trajectory data.
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+    """
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"File {file_name} does not exist.")
 
