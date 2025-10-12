@@ -515,8 +515,8 @@ class SplineLenght:
             t_end = max(0, min(t_end, self.spline.n))
 
         curve_length = (
-            self.compute_section_length(np.floor(t_start), t_start)
-            + self.compute_section_length(np.floor(t_end), t_end)
+            self.section_length(np.floor(t_start), t_start)
+            + self.section_length(np.floor(t_end), t_end)
             + self.cumulative_lengths[int(np.floor(t_end))]
             - self.cumulative_lengths[int(np.floor(t_start))]
         )
