@@ -1,0 +1,6 @@
+<launch>
+    <!-- Run Python car control node -->
+    <node pkg="simulator" type="vehicle_node.py" name="vehicle_node" output="screen">
+        <param name="control_frequency" value="50"/>
+    </node>
+</launch>
