@@ -1,9 +1,9 @@
 # Copyright (c) 2025 Sai Yaswanth. All rights reserved.
 
 import os
-from utils import read_waypoint_file, WayPoints, Trajectory, Spline, SplineLenght
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import read_waypoint_file, WayPoints, Trajectory, Spline, SplineLenght
 
 
 class TrajectoryHandler:
@@ -19,7 +19,7 @@ class TrajectoryHandler:
         Raises:
             ValueError: If the trajectory file cannot be loaded or if the spline cannot be created.
         """
-        waypoints, success = read_waypoint_file(file_path)
+        waypoints, success = read_waypoint_file(trajectory_file)
         if not success:
             raise ValueError(f"Failed to load trajectory from {trajectory_file}")
         try:
@@ -63,6 +63,17 @@ class TrajectoryHandler:
         points = self.spline(t_values)
         theta = self.spline.get_heading(t_values)
         return Trajectory(points[:, 0], points[:, 1], theta)
+
+    def get_start_point(self) -> np.ndarray:
+        """
+        Returns the start point of the trajectory.
+        Returns:
+            np.ndarray: Start point as a numpy array [x, y].
+        """
+        point = self.spline(np.array([0.0]))[0]
+        heading = self.spline.get_heading(np.array([0.0]))[0]
+        theta = np.arctan2(heading[1], heading[0])
+        return np.array([point[0], point[1], theta])
 
     def get_closest_point(
         self, current_position: np.ndarray, max_distance: float
