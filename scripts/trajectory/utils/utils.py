@@ -2,7 +2,7 @@
 
 import os
 import csv
-from typing import Tuple
+from typing import Tuple, Iterator
 import numpy
 import matplotlib.pyplot as plt
 
@@ -39,6 +39,16 @@ class WayPoints:
             ["..."] if len(self.y) > max_len else []
         )
         return f"WayPoints(\n  x={x_display},\n  y={y_display}\n)"
+
+    def __iter__(self) -> Iterator[Tuple[float, float]]:
+        """
+        Returns an iterator over the waypoints.
+        Yields:
+            Tuple[float, float]: A tuple containing (x, y) for each waypoint.
+        """
+        # TODO made this to len(self.x)-1 to avoid index error in trajectory handler
+        for i in range(len(self.x) - 1):
+            yield (self.x[i], self.y[i])
 
 
 class Trajectory:
@@ -90,6 +100,15 @@ class Trajectory:
             f"  theta={theta_display}\n"
             f")"
         )
+
+    def __iter__(self) -> Iterator[Tuple[float, float, float]]:
+        """
+        Returns an iterator over the trajectory points.
+        Yields:
+            Tuple[float, float, float]: A tuple containing (x, y, theta) for each point.
+        """
+        for xi, yi, thetai in zip(self.x, self.y, self.theta):
+            yield (xi, yi, thetai)
 
 
 def read_waypoint_file(file_name: str) -> Tuple[numpy.ndarray, bool]:
