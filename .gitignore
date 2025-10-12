@@ -57,3 +57,6 @@ CMakeFiles/
 
 # VScode cache files
 .vscode/
+
+# python cache files
+__pycache__/
