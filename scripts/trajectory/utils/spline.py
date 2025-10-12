@@ -373,9 +373,9 @@ class Spline:
                 (t_closest, euclidean_distance, normal_distance)
         """
         if t_min < 0 or t_max > self.n or t_min >= t_max:
-            print(
-                f"Warning: t_min={t_min} or t_max={t_max} is out of bounds [0, {self.n}] or invalid. Clamping to valid range."
-            )
+            #     print(
+            #         f"Warning: t_min={t_min} or t_max={t_max} is out of bounds [0, {self.n}] or invalid. Clamping to valid range."
+            #     )
             t_min = max(0, min(t_min, self.n))
             t_max = max(0, min(t_max, self.n))
             if t_min >= t_max:
@@ -468,7 +468,7 @@ class SplineLenght:
             float: Length of the spline between t_start and t_end.
         """
         if t_start >= t_end:
-            print("Warning: t_start should be less than t_end.")
+            # print("Warning: t_start should be less than t_end.")
             return 0.0
 
         points, weights = self.gauss_legendre_parameters(quantization_steps)
