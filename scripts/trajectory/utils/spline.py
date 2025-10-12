@@ -307,6 +307,103 @@ class Spline:
         radius_of_curvature = np.where(curvature != 0, 1 / curvature, np.inf)
         return radius_of_curvature
 
+    def get_heading(self, t: np.ndarray) -> np.ndarray:
+        """
+        Compute the heading (orientation angle) at multiple parameter values.
+        Args:
+            t (np.ndarray): Array of parameter values.
+        Returns:
+            np.ndarray: Array of heading vector at the parameter values.
+        """
+        t = np.array(np.clip(t, 0, self.n))
+        return self.get_jacobian(t)
+        # jacobian = self.get_jacobian(t)
+        # headings = np.arctan2(jacobian[:, 1], jacobian[:, 0])
+        # return headings
+
+    def get_distance(
+        self, point: np.ndarray, t_query: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Compute point-to-spline distances along tangential and normal directions.
+
+        Args:
+            point (np.ndarray): Shape (2,), the query point (x, y)
+            t_query (np.ndarray): Shape (m,), spline parameter values
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: (point_distance, normal_distance)
+                - point_distance: Euclidean distance to each spline point
+                - normal_distance: absolute perpendicular projection distance
+        """
+        # Evaluate spline positions and Jacobian (dx/dt, dy/dt)
+        points_spline = self(t_query)  # (m, 2)
+        jacobian_spline = self.get_jacobian(t_query)  # (m, 2)
+
+        # Vectorized difference to query point
+        points_diff = points_spline - point[None, :]  # (m, 2)
+        point_distance = np.linalg.norm(points_diff, axis=1)  # (m,)
+
+        # Normalize tangent vectors
+        jacobian_norm = np.linalg.norm(jacobian_spline, axis=1, keepdims=True)
+        jacobian_unit = jacobian_spline / np.clip(jacobian_norm, 1e-9, None)
+
+        # Rotate by 90° (right-handed normal)
+        normal_vectors = np.stack([-jacobian_unit[:, 1], jacobian_unit[:, 0]], axis=1)
+
+        # Signed perpendicular distance
+        normal_distance = np.abs(np.sum(points_diff * normal_vectors, axis=1))
+
+        return point_distance, normal_distance
+
+    def get_closest_point(
+        self, point: np.ndarray, t_min: float, t_max: float, iterations: int = 5
+    ) -> Tuple[float, float, float]:
+        """
+        Iteratively find the spline parameter t of the closest point to a query.
+
+        Args:
+            point (np.ndarray): Shape (2,), query point (x, y)
+            t_min (float): Minimum parameter
+            t_max (float): Maximum parameter
+            iterations (int): Number of refinement iterations
+
+        Returns:
+            Tuple[float, float, float]:
+                (t_closest, euclidean_distance, normal_distance)
+        """
+        if t_min < 0 or t_max > self.n or t_min >= t_max:
+            print(
+                f"Warning: t_min={t_min} or t_max={t_max} is out of bounds [0, {self.n}] or invalid. Clamping to valid range."
+            )
+            t_min = max(0, min(t_min, self.n))
+            t_max = max(0, min(t_max, self.n))
+            if t_min >= t_max:
+                t_min = 0.0
+                t_max = float(self.n)
+
+        t_range = (t_max - t_min) / 2.0
+        num_points = max(int(t_range / 4), 10)
+
+        t = np.linspace(t_min, t_max, num_points)
+        for _ in range(iterations):
+            point_distance, normal_distance = self.get_distance(point, t)
+            distance_vector = point_distance + normal_distance
+            closest_idx = np.argmin(distance_vector)
+
+            t_center = t[closest_idx]
+            t_range = max(t_range / 8, 1e-4)
+            num_points = max(num_points // 2, 10)
+            t_min = max(0.0, t_center - t_range)
+            t_max = min(float(self.n), t_center + t_range)
+            t = np.linspace(t_min, t_max, num_points)
+
+        return (
+            t[closest_idx],
+            point_distance[closest_idx],
+            normal_distance[closest_idx],
+        )
+
     def animate_spline(self, num_points: int = 100) -> None:
         """
         Generate points along the spline for animation or plotting.
