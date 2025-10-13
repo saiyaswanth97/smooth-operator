@@ -13,7 +13,7 @@ import os
 import sys
 
 # TODO remove this hack
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../../scripts/trajectory"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../trajectory/scripts"))
 from trajectory_handler import TrajectoryHandler, Trajectory
 from gazebo_utils import gazebo_reset_robot, RvizPathVisualizer
 
@@ -21,7 +21,7 @@ from gazebo_utils import gazebo_reset_robot, RvizPathVisualizer
 class CarControlNode:
     def __init__(self):
         rospy.init_node("vehicle_node")
-        self.freq = rospy.get_param("~control_frequency", 5)
+        self.freq = rospy.get_param("~control_frequency", 10)
         self.rate = rospy.Rate(self.freq)
 
         self.velocity = 0.05
@@ -91,9 +91,12 @@ class CarControlNode:
 
         while not rospy.is_shutdown():
             local_trajectory = self.path_handler.get_local_trajectory(
-                np.array(self.state[:2]), horizon=5.0, ds=0.1
+                np.array(self.state[:2]), horizon=5.0, ds=0.25
             )
-            path = self.trajectory_to_ros_msg(local_trajectory, velocity=0.5)
+            local_trajectory.x = local_trajectory.x[1:]
+            local_trajectory.y = local_trajectory.y[1:]
+            local_trajectory.theta = local_trajectory.theta[1:]
+            path = self.trajectory_to_ros_msg(local_trajectory, velocity=0.2)
 
             self.viz.visualize_local_path(local_trajectory.x, local_trajectory.y)
 
