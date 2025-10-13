@@ -113,6 +113,7 @@ class BezierSpline:
         self.b = None
         self.c = None
         self.d = None
+        self.compute_coefficients()
 
     def build_b_matrix(self, coordinates: np.ndarray) -> np.ndarray:
         """
@@ -574,13 +575,13 @@ class SplineLenght:
         s_values = np.linspace(0, self.cumulative_lengths[-1], num_points)
         t_values = [self.get_t_from_s(s) for s in s_values]
 
-        # plt.figure(figsize=(10, 6))
-        # plt.plot(t_values, s_values, 'b-', label='Cumulative Length')
-        # plt.title('Cumulative Curve Length')
-        # plt.xlabel('Parameter t')
-        # plt.ylabel('Arc Length s')
-        # plt.legend()
-        # plt.show()
+        plt.figure(figsize=(10, 6))
+        plt.plot(t_values, s_values, "b-", label="Cumulative Length")
+        plt.title("Cumulative Curve Length")
+        plt.xlabel("Parameter t")
+        plt.ylabel("Arc Length s")
+        plt.legend()
+        plt.show()
 
         points = self.spline(t_values)
         plt.figure(figsize=(10, 6))
