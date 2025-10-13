@@ -5,9 +5,7 @@ import pytest
 import os
 import sys
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts/trajectory"))
-)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../scripts")))
 from utils.spline import Spline
 
 
@@ -119,3 +117,15 @@ def test_vectorized_output_shapes(traj_helper: Spline):
     point_dist, normal_dist = traj_helper.get_distance(point, t_query)
     assert point_dist.shape == (t_query.size,)
     assert normal_dist.shape == (t_query.size,)
+
+
+# def test_curve_lenghth(traj_helper: Spline):
+#     """
+#     Ensure the computed curve length is as expected.
+#     Args:
+#         traj_helper (Spline): The trajectory helper object.
+#     """
+#     length = traj_helper.get_curve_length(0.0, traj_helper.n)
+#     # For the line from (0,0) to (3,3), length should be 3*sqrt(2)
+#     expected_length = 3 * np.sqrt(2)
+#     assert np.isclose(length, expected_length, atol=1e-6)
