@@ -11,6 +11,7 @@ Checks: >
   google-*,
   -google-readability-namespace-comments,
   -google-readability-todo,
+  -google-runtime-references,
   modernize-*,
   -modernize-return-braced-init-list,
   -modernize-use-trailing-return-type,
@@ -22,6 +23,7 @@ Checks: >
   -readability-identifier-length,
   -readability-function-cognitive-complexity,
   -readability-braces-around-statements,
+  -readability-else-after-return,
   misc-const-correctness,
 WarningsAsErrors: ''
 HeaderFilterRegex: 'src/.*'

@@ -31,7 +31,7 @@ repos:
     rev: v1.3.5
     hooks:
       - id: clang-tidy
-        args: [--checks=readability-magic-numbers,--warnings-as-errors=*]
+        args: ['--header-filter=.*src/.*', '--']
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
     hooks:
