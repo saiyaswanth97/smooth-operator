@@ -90,20 +90,22 @@ class CarControlNode:
             self.rate.sleep()
 
         while not rospy.is_shutdown():
+            local_odometry = self.odom
+            local_state = [
+                local_odometry.pose.pose.position.x,
+                local_odometry.pose.pose.position.y,
+            ]
             local_trajectory = self.path_handler.get_local_trajectory(
-                np.array(self.state[:2]), horizon=5.0, ds=0.25
+                np.array(local_state), horizon=10.0, ds=0.2
             )
-            local_trajectory.x = local_trajectory.x[1:]
-            local_trajectory.y = local_trajectory.y[1:]
-            local_trajectory.theta = local_trajectory.theta[1:]
-            path = self.trajectory_to_ros_msg(local_trajectory, velocity=0.2)
+            local_path = self.trajectory_to_ros_msg(local_trajectory, velocity=0.2)
 
             self.viz.visualize_local_path(local_trajectory.x, local_trajectory.y)
 
             # Call MPC service
             request = MPCServiceRequest()
-            request.path = path
-            request.odom = self.odom
+            request.path = local_path
+            request.odom = local_odometry
             response = self.client(request)
 
             cmd = Twist()
