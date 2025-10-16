@@ -5,7 +5,9 @@
     </node>
 
     <!-- Run MPC controller node -->
-    <node pkg="mpc_controller" type="mpc_node" name="mpc_node" output="screen"/>
+    <node pkg="mpc_controller" type="mpc_node" name="mpc_node" output="screen">
+        <param name="controller_type" value="dumb"/>
+    </node>
 
     <!-- Run Rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulator)/rviz/default.rviz" />

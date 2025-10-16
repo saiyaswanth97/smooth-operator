@@ -21,8 +21,7 @@ include_directories(
   /usr/include/eigen3
 )
 
-add_executable(mpc_node src/mpc_node.cpp)
-# add_executable(mpc_node src/mpc_node.cpp src/mpc_solver_new1.cpp)
+add_executable(mpc_node src/mpc_node.cpp src/mpc_solver.cpp)
 
 target_link_libraries(mpc_node
   ${catkin_LIBRARIES}

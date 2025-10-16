@@ -10,7 +10,7 @@
 #include <Eigen/Dense>
 
 #include "OsqpEigen/OsqpEigen.h"
-// #include "mpc_solver_new1.h"
+#include "mpc_solver.h"
 
 // Constants for quaternion to yaw conversion
 constexpr double QUAT_TO_YAW_FACTOR = 2.0;
@@ -93,52 +93,66 @@ std::tuple<double, double> stanley_control(simulator::Path2D path, const nav_msg
 
 class MPCController {
 public:
-    // NOLINTNEXTLINE(google-runtime-references)
-    MPCController(ros::NodeHandle &nh, double k_p_yaw, double velocity)
-        : k_p_yaw_(k_p_yaw), velocity_(velocity) {
-        // : k_p_yaw_(k_p_yaw), velocity_(velocity), mpc_solver_(MPCSolver::Config()) {
+    MPCController(ros::NodeHandle &nh, std::string controller_type, double k_p_yaw, double velocity)
+        : k_p_yaw_(k_p_yaw),
+          velocity_(velocity),
+          controller_type_(std::move(controller_type)),
+          mpc_solver_(MPCSolver::Config()) {
         service_ = nh.advertiseService("mpc_control", &MPCController::serviceCallback, this);
     }
 
     // NOLINTNEXTLINE(google-runtime-references, readability-make-member-function-const)
     bool serviceCallback(simulator::MPCService::Request &req,
-                         // NOLINTNEXTLINE(google-runtime-references)
                          simulator::MPCService::Response &res) {
-        // Solve MPC
-        // mpc_solver_.reset();
-        // simulator::Command command = mpc_solver_.solve(req.odom, req.path);
-
-        // Use stanley controller
-        // simulator::Command command;
-        // std::tie(command.linear_velocity, command.angular_velocity) =
-        //     stanley_control(req.path, req.odom, k_p_yaw_, velocity_);
-
-        // Use dumb controller
-        simulator::Command command;
-        std::tie(command.linear_velocity, command.angular_velocity) =
-          dumb_control(req.path, req.odom, k_p_yaw_, velocity_);
-
-        // Fill response
-        res.command = command;
-        std::cout << "Linear Velocity: " << command.linear_velocity
-                  << ", Angular Velocity: " << command.angular_velocity << std::endl;
-        return true;
+        if (controller_type_ == "mpc") {
+            // Use MPC controller
+            mpc_solver_.reset();
+            simulator::Command command = mpc_solver_.solve(req.odom, req.path);
+            res.command = command;
+            std::cout << "Linear Velocity: " << command.linear_velocity
+                      << ", Angular Velocity: " << command.angular_velocity << std::endl;
+            return true;
+        } else if (controller_type_ == "stanley") {
+            // Use stanley controller
+            simulator::Command command;
+            std::tie(command.linear_velocity, command.angular_velocity) =
+              stanley_control(req.path, req.odom, k_p_yaw_, velocity_);
+            res.command = command;
+            std::cout << "Linear Velocity: " << command.linear_velocity
+                      << ", Angular Velocity: " << command.angular_velocity << std::endl;
+            return true;
+        } else if (controller_type_ == "dumb") {
+            // Use dumb controller
+            simulator::Command command;
+            std::tie(command.linear_velocity, command.angular_velocity) =
+              dumb_control(req.path, req.odom, k_p_yaw_, velocity_);
+            res.command = command;
+            std::cout << "Linear Velocity: " << command.linear_velocity
+                      << ", Angular Velocity: " << command.angular_velocity << std::endl;
+            return true;
+        } else {
+            std::cerr << "Unknown controller type: " << controller_type_ << std::endl;
+            return false;
+        }
     }
 
 private:
     double k_p_yaw_;
     double velocity_;
-    // MPCSolver mpc_solver_;
+    std::string controller_type_;
+    MPCSolver mpc_solver_;
     ros::ServiceServer service_;
 };
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "mpc_node");
     ros::NodeHandle nh;
+    ros::NodeHandle pnh("~");
+    std::string controller_type = pnh.param<std::string>("controller_type", "mpc");
 
     // Initialize controller with gains
     // NOLINTNEXTLINE(readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers)
-    MPCController controller(nh, 2.5, 0.5);
+    MPCController controller(nh, controller_type, 2.5, 0.5);
 
     // ROS_INFO("MPC Controller Service Ready.");
     ros::spin();
